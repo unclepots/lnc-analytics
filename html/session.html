@@ -1,6 +1,13 @@
 <!doctype html>
 <html lang="en-US">
     <head>
+        <script>
+        if (typeof(jQuery) == "undefined") {
+            var iframeBody = document.getElementsByTagName("body")[0];
+            var jQuery = function (selector) { return parent.jQuery(selector, iframeBody); };
+            var $ = jQuery;
+        }
+        </script>
         <!-- <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js?ver=3.3.1"></script> -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js" integrity="sha256-1A78rJEdiWTzco6qdn3igTBv9VupN3Q1ozZNTR4WE/Y=" crossorigin="anonymous"></script>
     </head>
