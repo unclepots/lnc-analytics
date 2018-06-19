@@ -13,7 +13,7 @@
                 console.log('Session ID is: ' + getCookie('lnc_session_id'));
             }else{
                 var xhr = new XMLHttpRequest();
-                xhr.open('GET', 'https://lnc-analytics.herokuapp.com//session/open');
+                xhr.open('GET', 'https://lnc-analytics.herokuapp.com/session/open');
                 xhr.onload = function() {
                     if (xhr.status === 200) {
                         document.cookie = 'lnc_session_id=' + xhr.responseText + '; path=/; expires=3011';
