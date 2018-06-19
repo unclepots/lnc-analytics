@@ -1,0 +1,7 @@
+# dependencies
+/node_modules
+
+# misc
+desktop.ini
+.DS_Store
+.env
