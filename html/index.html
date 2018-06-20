@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en-US">
+    <head>
+        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js?ver=3.3.1"></script>
+    </head>
+    <body>
+        <h1>Testing Server</h1>
+    </body>
+    <script>
+        jQuery(document).ready(function($){
+            "use strict";
+        });
+        $(window).on('load', function(){
+            "use strict";
+            add_tracking();
+        });
+        function add_tracking(){
+            var domain = (document.location.href.indexOf("localhost") > -1) ? "http://localhost:5000" : "https://lnc-analytics.herokuapp.com";
+            var iframe = document.createElement('iframe');
+            iframe.style.display = "none";
+            iframe.src = domain + '/session/';
+            document.body.appendChild(iframe);
+        }
+    </script>
+</html>
