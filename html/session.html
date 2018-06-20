@@ -20,12 +20,14 @@
             }
 
             function get_browser(){
-                var isOpera = (!!window.opr && !!opr.addons) || !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0;
+                var win = window.top;
+
+                var isOpera = (!!win.opr && !!opr.addons) || !!win.opera || navigator.userAgent.indexOf(' OPR/') >= 0;
                 var isFirefox = typeof InstallTrigger !== 'undefined';
-                var isSafari = /constructor/i.test(window.HTMLElement) || (function (p) { return p.toString() === "[object SafariRemoteNotification]"; })(!window['safari'] || (typeof safari !== 'undefined' && safari.pushNotification));
+                var isSafari = /constructor/i.test(win.HTMLElement) || (function (p) { return p.toString() === "[object SafariRemoteNotification]"; })(!win['safari'] || (typeof safari !== 'undefined' && safari.pushNotification));
                 var isIE = /*@cc_on!@*/false || !!document.documentMode;
-                var isEdge = !isIE && !!window.StyleMedia;
-                var isChrome = !!window.chrome && !!window.chrome.webstore;
+                var isEdge = !isIE && !!win.StyleMedia;
+                var isChrome = !!win.chrome && !!win.chrome.webstore;
 
                 if(isOpera){return 'Opera';}
                 else if(isFirefox){return 'Mozilla';}
