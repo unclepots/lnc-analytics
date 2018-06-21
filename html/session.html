@@ -11,6 +11,7 @@
             let session_data = {};
             let page_data = {};
             let page_id = '';
+            let done = false;
 
             var BrowserDetect = {
                 init: function () {
@@ -133,6 +134,20 @@
 
             };
             BrowserDetect.init();
+            
+            window.addEventListener('message', function(e){
+
+                page_data['referrer'] = e.data.referrer;
+                page_data['host'] = e.data.host;
+                page_data['page'] = e.data.page;
+
+                page_data['document'] = {};
+                page_data['document']['title'] = e.data.title;
+                page_data['document']['width'] = e.data.width;
+                page_data['document']['height'] = e.data.height;
+
+                submit_page_visit(page_data);
+            }, false);
 
             function open_session(){
                 "use strict";
@@ -201,11 +216,9 @@
             
             function get_page_view(){
                 "use strict";
-                var referrer = window.location.search.substring(1).split('=');
-                
 
                 $.get("https://ipinfo.io", function(response) {
-
+                    
                     page_data["network"] = {};
                     page_data["network"]["publicIP"] = response.ip;
                     page_data["network"]["provider"] = response.org;
@@ -222,18 +235,10 @@
                     submit_page_visit(page_data);
 
                 }, "jsonp");
-
-                page_data['referrer'] = referrer[1];
-                page_data['host'] = window.parent.location.origin;
-                page_data['page'] = window.parent.location.pathname;
-
-                page_data['document'] = {};
-                page_data['document']['title'] = document.title;
-                page_data['document']['width'] = window.parent.innerWidth;
-                page_data['document']['height'] = window.parent.innerHeight;
             }
             
             function submit_page_visit(data){
+                if(!done){done=true;return;}
                 "use strict";
                 $.ajax({
                     type:       'PUT',
