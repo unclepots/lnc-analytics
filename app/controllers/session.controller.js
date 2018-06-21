@@ -34,8 +34,13 @@ exports.update = (req, res) => {
         timeZone: data.timeZone || 'Not set',
         language: data.language || 'Not set',
         software: {
-            os: data.software.os || 'Not Set',
-            browser: data.software.browser || 'Not Set'
+            os: {
+                vendor: data.software.os.vendor || 'Not Set',
+            },
+            browser: {
+                vendow: data.software.browser.vendor || 'Not Set',
+                version: data.software.browser.version || 'Not Set'
+            },
         },
         display: {
             screenWidth: data.display.screenWidth || 'Not Set',

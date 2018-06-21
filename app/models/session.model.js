@@ -4,8 +4,13 @@ const SessionSchema = mongoose.Schema({
     timeZone: String,
     language: String,
     software: {
-        os: String,
-        browser: String
+        os: {
+            vendor: String,
+        },
+        browser: {
+            vendow: String,
+            version: String
+        },
     },
     display: {
         screenWidth: Number,

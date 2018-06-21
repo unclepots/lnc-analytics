@@ -10,40 +10,134 @@
             let session_id = $.cookie('lnc_session_id');
             let session_data = {};
             
-            function get_os(){
-                var OSName="Unknown OS";
-                if (navigator.appVersion.indexOf("Win")!=-1) OSName="Windows";
-                if (navigator.appVersion.indexOf("Mac")!=-1) OSName="MacOS";
-                if (navigator.appVersion.indexOf("X11")!=-1) OSName="UNIX";
-                if (navigator.appVersion.indexOf("Linux")!=-1) OSName="Linux";
-                return OSName;
-            }
+            var BrowserDetect = {
+                init: function () {
+                    this.browser = this.searchString(this.dataBrowser) || "An unknown browser";
+                    this.version = this.searchVersion(navigator.userAgent)
+                        || this.searchVersion(navigator.appVersion)
+                        || "an unknown version";
+                    this.OS = this.searchString(this.dataOS) || "an unknown OS";
+                },
+                searchString: function (data) {
+                    for (var i=0;i<data.length;i++)	{
+                        var dataString = data[i].string;
+                        var dataProp = data[i].prop;
+                        this.versionSearchString = data[i].versionSearch || data[i].identity;
+                        if (dataString) {
+                            if (dataString.indexOf(data[i].subString) != -1)
+                                return data[i].identity;
+                        }
+                        else if (dataProp)
+                            return data[i].identity;
+                    }
+                },
+                searchVersion: function (dataString) {
+                    var index = dataString.indexOf(this.versionSearchString);
+                    if (index == -1) return;
+                    return parseFloat(dataString.substring(index+this.versionSearchString.length+1));
+                },
+                dataBrowser: [
+                    {
+                        string: navigator.userAgent,
+                        subString: "Chrome",
+                        identity: "Chrome"
+                    },
+                    { 	string: navigator.userAgent,
+                        subString: "OmniWeb",
+                        versionSearch: "OmniWeb/",
+                        identity: "OmniWeb"
+                    },
+                    {
+                        string: navigator.vendor,
+                        subString: "Apple",
+                        identity: "Safari",
+                        versionSearch: "Version"
+                    },
+                    {
+                        prop: window.opera,
+                        identity: "Opera"
+                    },
+                    {
+                        string: navigator.vendor,
+                        subString: "iCab",
+                        identity: "iCab"
+                    },
+                    {
+                        string: navigator.vendor,
+                        subString: "KDE",
+                        identity: "Konqueror"
+                    },
+                    {
+                        string: navigator.userAgent,
+                        subString: "Firefox",
+                        identity: "Firefox"
+                    },
+                    {
+                        string: navigator.vendor,
+                        subString: "Camino",
+                        identity: "Camino"
+                    },
+                    {		// for newer Netscapes (6+)
+                        string: navigator.userAgent,
+                        subString: "Netscape",
+                        identity: "Netscape"
+                    },
+                    {
+                        string: navigator.userAgent,
+                        subString: "MSIE",
+                        identity: "Explorer",
+                        versionSearch: "MSIE"
+                    },
+                    {
+                        string: navigator.userAgent,
+                        subString: "Gecko",
+                        identity: "Mozilla",
+                        versionSearch: "rv"
+                    },
+                    { 		// for older Netscapes (4-)
+                        string: navigator.userAgent,
+                        subString: "Mozilla",
+                        identity: "Netscape",
+                        versionSearch: "Mozilla"
+                    }
+                ],
+                dataOS : [
+                    {
+                        string: navigator.platform,
+                        subString: "Win",
+                        identity: "Windows"
+                    },
+                    {
+                        string: navigator.platform,
+                        subString: "Mac",
+                        identity: "Mac"
+                    },
+                    {
+                        string: navigator.userAgent,
+                        subString: "iPhone",
+                        identity: "iPhone/iPod"
+                    },
+                    {
+                        string: navigator.userAgent,
+                        subString: "iPad",
+                        identity: "iPad"
+                    },
+                    {
+                        string: navigator.platform,
+                        subString: "Linux",
+                        identity: "Linux"
+                    }
+                ]
 
-            function get_browser(){
-                var win = window.top;
-
-                var isOpera = (!!win.opr && !!opr.addons) || !!win.opera || navigator.userAgent.indexOf(' OPR/') >= 0;
-                var isFirefox = typeof InstallTrigger !== 'undefined';
-                var isSafari = /constructor/i.test(win.HTMLElement) || (function (p) { return p.toString() === "[object SafariRemoteNotification]"; })(!win['safari'] || (typeof safari !== 'undefined' && safari.pushNotification));
-                var isIE = /*@cc_on!@*/false || !!document.documentMode;
-                var isEdge = !isIE && !!win.StyleMedia;
-                var isChrome = !!win.chrome && !!win.chrome.webstore;
-
-                if(isOpera){return 'Opera';}
-                else if(isFirefox){return 'Mozilla';}
-                else if(isSafari){return 'Safari';}
-                else if(isIE && isEdge){return 'Edge';}
-                else if(isIE){return 'IE';}
-                else if(isChrome){return 'Chrome';}
-                else{return 'Undefined';}
-            }
+            };
+            BrowserDetect.init();
 
             function open_session(){
                 $.ajax({
                     type:		'GET',
                     url:		domain + '/session/open',
                     success:	function(value){
-                        $.cookie('lnc_session_id', value, { expires: 365, path: '/' });
+                        $.cookie('lnc_session_id', value, { expires: 730, path: '/' });
                         session_id = value;
                         get_session_info();
                     }
@@ -100,8 +194,13 @@
                 session_data["language"] = navigator.language || navigator.userLanguage;
 
                 session_data["software"] = {};
-                session_data["software"]["os"] = get_os();
-                session_data["software"]["browser"] = get_browser();
+
+                session_data["software"]["os"] = {};
+                session_data["software"]["os"]["vendor"] = BrowserDetect.OS;
+
+                session_data["software"]["browser"] = {};
+                session_data["software"]["browser"]["vendor"] = BrowserDetect.browser;
+                session_data["software"]["browser"]["version"] = BrowserDetect.version;
                 
                 session_data["display"] = {};
                 session_data["display"]["screenWidth"] = window.screen.width;
