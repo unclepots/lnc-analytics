@@ -17,18 +17,6 @@ const SessionSchema = mongoose.Schema({
         width: Number,
         height: Number,
         colorDepth: Number
-    },
-    network: {
-        publicIP: String,
-        provider: String,
-    },
-    location: {
-        latitude: String,
-        longitude: String,
-        country: String,
-        region: String,
-        city: String,
-        postal: String
     }
 },{
     timestamps: true

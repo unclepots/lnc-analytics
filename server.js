@@ -48,6 +48,7 @@ app.get('/icons/:icon', (req, res) => {
 // Require Routes File
 require('./app/routes/note.routes.js')(app);
 require('./app/routes/session.routes.js')(app);
+require('./app/routes/page.routes.js')(app);
 
 // Port Listening
 app.listen(process.env.PORT || 5000, () => {

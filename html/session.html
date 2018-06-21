@@ -9,7 +9,9 @@
             let domain = (document.location.href.indexOf("localhost") > -1) ? "http://localhost:5000" : "https://lnc-analytics.herokuapp.com";
             let session_id = $.cookie('lnc_session_id');
             let session_data = {};
-            
+            let page_data = {};
+            let page_id = '';
+
             var BrowserDetect = {
                 init: function () {
                     this.browser = this.searchString(this.dataBrowser) || "An unknown browser";
@@ -133,6 +135,8 @@
             BrowserDetect.init();
 
             function open_session(){
+                "use strict";
+
                 $.ajax({
                     type:		'GET',
                     url:		domain + '/session/open',
@@ -145,13 +149,14 @@
             }
             
             function verify_session(session_id){
+                "use strict";
+
                 $.ajax({
                     type:		'GET',
                     url:		domain + '/session/verify/'+session_id,
                     success:	function(value){
-                        console.log(value);
                         if(value !== "true"){
-                            console.log("Session Not Verified");
+                            //console.log("Session Not Verified");
                             open_session();
                         }
                     }
@@ -159,36 +164,19 @@
             }
             
             function send_session_date(data){
+                "use strict";
                 $.ajax({
                     type:       'PUT',
                     data:       data,
                     url:        domain + '/session/update/' + session_id,
                     success:    function(response){
-                        console.log(response);
+                        //console.log(response);
                     }
                 });
             }
 
             function get_session_info(){
-                session_data.display = {};
-
-                $.get("https://ipinfo.io", function(response) {
-
-                    session_data["network"] = {};
-                    session_data["network"]["public_ip"] = response.ip;
-                    session_data["network"]["provider"] = response.org;
-
-                    session_data["location"] = {};
-                    loc = response.loc.split(',');
-                    session_data["location"]["latitude"] = loc[0];
-                    session_data["location"]["longitude"] = loc[1];
-                    session_data["location"]["country"] = response.country;
-                    session_data["location"]["region"] = response.region;
-                    session_data["location"]["postal"] = response.postal;
-                    session_data["location"]["city"] = response.city;
-
-                    send_session_date(session_data);
-                }, "jsonp");
+                "use strict";
 
                 session_data["timeZone"] = new Date().getTimezoneOffset();
                 session_data["language"] = navigator.language || navigator.userLanguage;
@@ -207,17 +195,79 @@
                 session_data["display"]["width"] = window.screen.width;
                 session_data["display"]["height"] = window.screen.height;
                 session_data["display"]["colorDepth"] = screen.colorDepth;
-                    
-            }
 
+                send_session_date(session_data);
+            }
+            
+            function get_page_view(){
+                "use strict";
+                var referrer = window.location.search.substring(1).split('=');
+                
+
+                $.get("https://ipinfo.io", function(response) {
+
+                    page_data["network"] = {};
+                    page_data["network"]["publicIP"] = response.ip;
+                    page_data["network"]["provider"] = response.org;
+
+                    page_data["location"] = {};
+                    const loc = response.loc.split(',');
+                    page_data["location"]["latitude"] = loc[0];
+                    page_data["location"]["longitude"] = loc[1];
+                    page_data["location"]["country"] = response.country;
+                    page_data["location"]["region"] = response.region;
+                    page_data["location"]["postal"] = response.postal;
+                    page_data["location"]["city"] = response.city;
+                    
+                    submit_page_visit(page_data);
+
+                }, "jsonp");
+
+                page_data['referrer'] = referrer[1];
+                page_data['host'] = window.parent.location.origin;
+                page_data['page'] = window.parent.location.pathname;
+
+                page_data['document'] = {};
+                page_data['document']['title'] = document.title;
+                page_data['document']['width'] = window.parent.innerWidth;
+                page_data['document']['height'] = window.parent.innerHeight;
+            }
+            
+            function submit_page_visit(data){
+                "use strict";
+                $.ajax({
+                    type:       'PUT',
+                    data:       data,
+                    url:        domain + '/page/open/' + session_id,
+                    success:    function(response){
+                        page_id = response;
+                        send_beacon();
+                    }
+                });
+            }
+            
+            function send_beacon(){
+                "use strict";
+                setInterval(function(){
+                    $.ajax({
+                        type:       'PUT',
+                        url:        domain + '/page/close/' + page_id,
+                        success:    function(response){
+                            console.log(response);
+                        }
+                    });
+                }, 1000);
+            };
 
             if(session_id === undefined){
                 open_session();
-                console.log("Session Set");
+                //console.log("Session Set");
             }else{
-                console.log("Session Verify");
+                //console.log("Session Verify");
                 verify_session(session_id);
             }
+
+            get_page_view();
         </script>
     </body>
 </html>

@@ -46,19 +46,7 @@ exports.update = (req, res) => {
             scale: data.display.scale || 'Not Set',
             width: data.display.width || 'Not Set',
             height: data.display.height || 'Not Set',
-            colorDepth: data.display.colorDepth || 'Not Set',
-        },
-        network: {
-            publicIP: data.network.publicIP || 'Not Set',
-            provider: data.network.provider || 'Not Set',
-        },
-        location: {
-            latitude: data.location.latitude || 'Not Set',
-            longitude: data.location.longitude || 'Not Set',
-            country: data.location.country || 'Not Set',
-            region: data.location.region || 'Not Set',
-            city: data.location.city || 'Not Set',
-            postal: data.location.postal || 'Not Set'
+            colorDepth: data.display.colorDepth || 'Not Set'
         }
     }, {new: false})
         .then(session => {

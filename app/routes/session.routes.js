@@ -11,7 +11,4 @@ module.exports = (app) => {
     app.get('/session/verify/:session_id', session.verify);
 
     app.put('/session/update/:session_id', session.update);
-
-    app.get('/session/all', session.all);
-    app.get('/session/delete/:session_id', session.delete);
 }
