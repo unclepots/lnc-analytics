@@ -43,8 +43,9 @@ exports.update = (req, res) => {
             },
         },
         display: {
-            screenWidth: data.display.screenWidth || 'Not Set',
-            screenHeight: data.display.screenHeight || 'Not Set',
+            scale: data.display.scale || 'Not Set',
+            width: data.display.width || 'Not Set',
+            height: data.display.height || 'Not Set',
             colorDepth: data.display.colorDepth || 'Not Set',
         },
         network: {

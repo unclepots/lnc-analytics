@@ -203,8 +203,9 @@
                 session_data["software"]["browser"]["version"] = BrowserDetect.version;
                 
                 session_data["display"] = {};
-                session_data["display"]["screenWidth"] = window.screen.width;
-                session_data["display"]["screenHeight"] = window.screen.height;
+                session_data["display"]["scale"] = window.devicePixelRatio;
+                session_data["display"]["width"] = window.screen.width;
+                session_data["display"]["height"] = window.screen.height;
                 session_data["display"]["colorDepth"] = screen.colorDepth;
                     
             }

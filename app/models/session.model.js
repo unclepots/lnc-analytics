@@ -13,8 +13,9 @@ const SessionSchema = mongoose.Schema({
         },
     },
     display: {
-        screenWidth: Number,
-        screenHeight: Number,
+        scale: Number,
+        width: Number,
+        height: Number,
         colorDepth: Number
     },
     network: {
