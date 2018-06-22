@@ -1,4 +1,5 @@
 const Page = require('../models/page.model.js');
+const Session = require('../models/session.model.js');
 
 exports.register = (req, res) => {
     data = req.body;
@@ -27,6 +28,20 @@ exports.register = (req, res) => {
         }
     });
 
+    Session.update({
+        _id: req.params.session_id
+    }, {
+        $inc: {
+            pages: 1
+        }
+    }).then(data => {
+        console.log("Page Count Increased");
+    }).catch(err => {
+        res.status(500).send({
+            message: err.message || "Some error occurred while creating the Note."
+        });
+    });
+
     page.save()
         .then(data => {
             res.send(data._id);
@@ -35,6 +50,7 @@ exports.register = (req, res) => {
                 message: err.message || "Some error occurred while creating the Note."
             });
         });
+    
 }
 
 exports.close = (req, res) => {

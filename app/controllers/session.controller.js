@@ -1,7 +1,9 @@
 const Session = require('../models/session.model.js');
 
 exports.open = (req, res) => {
-    session = new Session;
+    session = new Session({
+        pages: 0
+    });
 
     session.save()
         .then(data => {

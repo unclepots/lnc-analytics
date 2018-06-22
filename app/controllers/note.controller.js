@@ -13,7 +13,7 @@ exports.create = (req, res) => {
         content: req.body.content
     });
 
-    Note.save()
+    note.save()
         .then(data => {
             res.send(data);
         }).catch(err => {

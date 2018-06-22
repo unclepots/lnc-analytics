@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const SessionSchema = mongoose.Schema({
     timeZone: String,
     language: String,
+    pages: Number,
     software: {
         os: {
             vendor: String,

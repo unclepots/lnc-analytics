@@ -20,19 +20,18 @@
             iframe.style.display = "none";
             iframe.id = 'lnc-analytics';
             iframe.onload = function(){
-                arr = {
+                var arr = {
                     "referrer": document.referrer,
                     "host": window.location.origin,
                     "page": window.location.pathname,
                     "title": document.title,
                     "width": window.innerWidth,
                     "height": window.innerHeight
-                }
+                };
                 this.contentWindow.postMessage(arr, domain);
             };
             iframe.src = domain + '/session/';
             document.body.appendChild(iframe);
-            iframe.addEventListener
         }
     </script>
 </html>
