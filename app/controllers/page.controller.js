@@ -6,7 +6,7 @@ const sanitizer = sanitize();
 exports.register = (req, res) => {
     let session_id = req.paramString("session_id");
     let host = sanitizer.value(req.body.host, "url");
-    let path = sanitizer.value(req.body.path, "url");
+    let path = sanitizer.value(req.body.path, "str");
     let referrer = sanitizer.value(req.body.referrer, "url");
     let title = sanitizer.value(req.body.document.title, "str");
     let width = sanitizer.value(req.body.document.width, "int");
