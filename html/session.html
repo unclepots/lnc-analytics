@@ -6,14 +6,8 @@
     </head>
     <body>
         <script>
-            let domain = (document.location.href.indexOf("localhost") > -1) ? "http://localhost:5000" : "https://lnc-analytics.herokuapp.com";
-            let session_id = $.cookie('lnc_session_id');
-            let session_data = {};
-            let page_data = {};
-            let page_id = '';
-            let done = false;
 
-            var BrowserDetect = {
+            let BrowserDetect = {
                 init: function () {
                     this.browser = this.searchString(this.dataBrowser) || "An unknown browser";
                     this.version = this.searchVersion(navigator.userAgent)
@@ -135,174 +129,169 @@
             };
             BrowserDetect.init();
             
-            window.addEventListener('message', function(e){
-                if(e.data.type === "init"){
-                    page_add_from_parent(e.data.data);
-                }else if(e.data.type === "contact"){
-                    send_contact(e.data.data);
-                }
-            }, false);
+            let LNCAnalytics = {
+                domain: (document.location.href.indexOf("localhost") > -1) ? "http://localhost:5000" : "https://lnc-analytics.herokuapp.com",
 
-            function open_session(){
-                "use strict";
+                session_id: $.cookie('lnc_session_id'),
+                page_id: '',
+                session_data: {},
+                page_data: {},
+                done: false,
 
-                $.ajax({
-                    type:		'GET',
-                    url:		domain + '/session/open',
-                    success:	function(value){
-                        $.cookie('lnc_session_id', value, { expires: 730, path: '/' });
-                        session_id = value;
-                        get_session_info();
+                init: function(){
+                    if(this.session_id === undefined){
+                        this.open_session();
+                    }else{
+                        this.verify_session();
                     }
-                });
-            }
-            
-            function verify_session(session_id){
-                "use strict";
 
-                $.ajax({
-                    type:		'GET',
-                    url:		domain + '/session/verify/'+session_id,
-                    success:	function(value){
-                        if(value !== "true"){
-                            //console.log("Session Not Verified");
-                            open_session();
-                        }
-                    }
-                });
-            }
-            
-            function send_session_date(data){
-                "use strict";
-                $.ajax({
-                    type:       'PUT',
-                    data:       data,
-                    url:        domain + '/session/update/' + session_id,
-                    success:    function(response){
-                        //console.log(response);
-                    }
-                });
-            }
-
-            function get_session_info(){
-                "use strict";
-
-                session_data["timeZone"] = new Date().getTimezoneOffset();
-                session_data["language"] = navigator.language || navigator.userLanguage;
-
-                session_data["software"] = {};
-
-                session_data["software"]["os"] = {};
-                session_data["software"]["os"]["vendor"] = BrowserDetect.OS;
-
-                session_data["software"]["browser"] = {};
-                session_data["software"]["browser"]["vendor"] = BrowserDetect.browser;
-                session_data["software"]["browser"]["version"] = BrowserDetect.version;
+                    this.get_page_info_from_ip();
+                },
                 
-                session_data["display"] = {};
-                session_data["display"]["scale"] = window.devicePixelRatio;
-                session_data["display"]["width"] = window.screen.width;
-                session_data["display"]["height"] = window.screen.height;
-                session_data["display"]["colorDepth"] = screen.colorDepth;
-
-                send_session_date(session_data);
-            }
-            
-            function page_add_from_parent(data){
-                
-                page_data['referrer'] = data.referrer;
-                page_data['host'] = data.host;
-                page_data['path'] = data.path;
-
-                page_data['document'] = {};
-                page_data['document']['title'] = data.title;
-                page_data['document']['width'] = data.width;
-                page_data['document']['height'] = data.height;
-
-                submit_page_visit(page_data);
-            }
-
-            function get_page_view(){
-                "use strict";
-
-                $.get("https://ipinfo.io", function(response) {
-                    
-                    page_data["network"] = {};
-                    page_data["network"]["publicIP"] = response.ip;
-                    page_data["network"]["provider"] = response.org;
-
-                    page_data["location"] = {};
-                    const loc = response.loc.split(',');
-                    page_data["location"]["latitude"] = loc[0];
-                    page_data["location"]["longitude"] = loc[1];
-                    page_data["location"]["country"] = response.country;
-                    page_data["location"]["region"] = response.region;
-                    page_data["location"]["postal"] = response.postal;
-                    page_data["location"]["city"] = response.city;
-                    
-                    submit_page_visit(page_data);
-
-                }, "jsonp");
-            }
-            
-            function submit_page_visit(data){
-                if(!done){done=true;return;}
-                "use strict";
-                $.ajax({
-                    type:       'PUT',
-                    data:       data,
-                    url:        domain + '/page/open/' + session_id,
-                    success:    function(response){
-                        page_id = response;
-                        send_beacon();
-                    }
-                });
-            }
-            
-            function send_contact(data){
-                "use strict";
-
-                let contact_data = {}
-
-                contact_data["origin"] = data.origin;
-                contact_data["firstname"] = data.firstname;
-                contact_data["lastname"] = data.lastname;
-                contact_data["email"] = data.email;
-                contact_data["phone"] = data.phone;
-                contact_data["message"] = data.message;
-
-                $.ajax({
-                    type:       'PUT',
-                    url:        domain + '/contact/' + session_id,
-                    data: contact_data,
-                    success:    function(response){
-                        console.log(response);
-                    }
-                });
-            }
-
-            function send_beacon(){
-                "use strict";
-                setInterval(function(){
+                open_session: function () {
                     $.ajax({
-                        type:       'PUT',
-                        url:        domain + '/page/close/' + page_id,
-                        success:    function(response){
-                            console.log(response);
+                        type:		'GET',
+                        url:		this.domain + '/session/open',
+                        success:	function(value){
+                            $.cookie('lnc_session_id', value, { expires: 730, path: '/' });
+                            LNCAnalytics.session_id = value;
+                            LNCAnalytics.get_session_info();
                         }
                     });
-                }, 1000);
-            };
-            
-            if(session_id === undefined){
-                open_session();
-                //console.log("Session Set");
-            }else{
-                //console.log("Session Verify");
-                verify_session(session_id);
-            }
+                },
 
-            get_page_view();
+                verify_session: function () {
+                    $.ajax({
+                        type:		'GET',
+                        url:		this.domain + '/session/verify/' + this.session_id,
+                        success:	function(value){
+                            if(value !== "true"){
+                                LNCAnalytics.open_session();
+                            }
+                        }
+                    });
+                },
+
+                get_session_info: function () {
+                    this.session_data["timeZone"] = new Date().getTimezoneOffset();
+                    this.session_data["language"] = navigator.language || navigator.userLanguage;
+
+                    this.session_data["software"] = {};
+
+                    this.session_data["software"]["os"] = {};
+                    this.session_data["software"]["os"]["vendor"] = BrowserDetect.OS;
+
+                    this.session_data["software"]["browser"] = {};
+                    this.session_data["software"]["browser"]["vendor"] = BrowserDetect.browser;
+                    this.session_data["software"]["browser"]["version"] = BrowserDetect.version;
+                    
+                    this.session_data["display"] = {};
+                    this.session_data["display"]["scale"] = window.devicePixelRatio;
+                    this.session_data["display"]["width"] = window.screen.width;
+                    this.session_data["display"]["height"] = window.screen.height;
+                    this.session_data["display"]["colorDepth"] = window.screen.colorDepth;
+
+                    this.send_session_data(this.session_data);
+                },
+
+                send_session_data: function (data) {
+                    $.ajax({
+                        type:       'PUT',
+                        data:       data,
+                        url:        this.domain + '/session/update/' + this.session_id,
+                        success:    function(response){
+                            console.log("Session data sent");
+                        }
+                    });
+                },
+                
+                get_page_info_from_ip: function () {
+                    $.get("https://ipinfo.io", function(response) {
+                        
+                        const loc = response.loc.split(',');
+
+                        LNCAnalytics.page_data["network"] = {};
+                        LNCAnalytics.page_data["network"]["publicIP"] = response.ip;
+                        LNCAnalytics.page_data["network"]["provider"] = response.org;
+
+                        LNCAnalytics.page_data["location"] = {};
+                        LNCAnalytics.page_data["location"]["latitude"] = loc[0];
+                        LNCAnalytics.page_data["location"]["longitude"] = loc[1];
+                        LNCAnalytics.page_data["location"]["country"] = response.country;
+                        LNCAnalytics.page_data["location"]["region"] = response.region;
+                        LNCAnalytics.page_data["location"]["postal"] = response.postal;
+                        LNCAnalytics.page_data["location"]["city"] = response.city;
+                        
+                        LNCAnalytics.send_page_data(this.page_data);
+
+                    }, "jsonp");
+                },
+                
+                get_page_info_from_parent: function (data) {
+                
+                    this.page_data['referrer'] = data.referrer;
+                    this.page_data['host'] = data.host;
+                    this.page_data['path'] = data.path;
+
+                    this.page_data['document'] = {};
+                    this.page_data['document']['title'] = data.title;
+                    this.page_data['document']['width'] = data.width;
+                    this.page_data['document']['height'] = data.height;
+
+                    this.send_page_data(this.page_data);
+                },
+
+                send_page_data: function (data) {
+                    if(!this.done){this.done=true;return;}
+
+                    $.ajax({
+                        type:       'PUT',
+                        data:       data,
+                        url:        this.domain + '/page/open/' + this.session_id,
+                        success:    function(response){
+                            LNCAnalytics.page_id = response;
+                            LNCAnalytics.send_beacon();
+                        }
+                    });
+                },
+
+                send_beacon: function () {
+                    setInterval(function(){
+                        $.ajax({
+                            type:       'PUT',
+                            url:        LNCAnalytics.domain + '/page/close/' + LNCAnalytics.page_id,
+                        });
+                    }, 1000);
+                },
+
+                send_contact: function (data){
+                    let contact_data = {}
+
+                    contact_data["origin"] = data.origin;
+                    contact_data["firstname"] = data.firstname;
+                    contact_data["lastname"] = data.lastname;
+                    contact_data["email"] = data.email;
+                    contact_data["phone"] = data.phone;
+                    contact_data["message"] = data.message;
+
+                    $.ajax({
+                        type:       'PUT',
+                        url:        this.domain + '/contact/' + this.session_id,
+                        data:       contact_data,
+                    });
+                },
+
+                message: function (message){
+                    if(message.type === "init"){
+                        this.get_page_info_from_parent(message.data);
+                    }else if(e.data.type === "contact"){
+                        this.send_contact(message.data);
+                    }
+                }
+            }
+            LNCAnalytics.init();
+            window.addEventListener('message', function(e){LNCAnalytics.message(e.data)}, false);
+            
         </script>
     </body>
 </html>
