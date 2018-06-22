@@ -136,17 +136,11 @@
             BrowserDetect.init();
             
             window.addEventListener('message', function(e){
-
-                page_data['referrer'] = e.data.referrer;
-                page_data['host'] = e.data.host;
-                page_data['page'] = e.data.page;
-
-                page_data['document'] = {};
-                page_data['document']['title'] = e.data.title;
-                page_data['document']['width'] = e.data.width;
-                page_data['document']['height'] = e.data.height;
-
-                submit_page_visit(page_data);
+                if(e.data.type === "init"){
+                    page_add_from_parent(e.data.data);
+                }else if(e.data.type === "contact"){
+                    send_contact(e.data.data);
+                }
             }, false);
 
             function open_session(){
@@ -214,6 +208,20 @@
                 send_session_date(session_data);
             }
             
+            function page_add_from_parent(data){
+                
+                page_data['referrer'] = data.referrer;
+                page_data['host'] = data.host;
+                page_data['page'] = data.page;
+
+                page_data['document'] = {};
+                page_data['document']['title'] = data.title;
+                page_data['document']['width'] = data.width;
+                page_data['document']['height'] = data.height;
+
+                submit_page_visit(page_data);
+            }
+
             function get_page_view(){
                 "use strict";
 
@@ -251,6 +259,28 @@
                 });
             }
             
+            function send_contact(data){
+                "use strict";
+
+                contact_data = {}
+
+                contact_data["origin"] = data.origin;
+                contact_data["firstname"] = data.firstname;
+                contact_data["lastname"] = data.lastname;
+                contact_data["email"] = data.email;
+                contact_data["phone"] = data.phone;
+                contact_data["message"] = data.message;
+
+                $.ajax({
+                    type:       'PUT',
+                    url:        domain + '/contact/' + session_id,
+                    data: contact_data,
+                    success:    function(response){
+                        console.log(response);
+                    }
+                });
+            }
+
             function send_beacon(){
                 "use strict";
                 setInterval(function(){
@@ -263,7 +293,7 @@
                     });
                 }, 1000);
             };
-
+            
             if(session_id === undefined){
                 open_session();
                 //console.log("Session Set");
