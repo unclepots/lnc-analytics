@@ -9,9 +9,9 @@ const path = require('path');
 const app = express();
 
 // Parse Requests
-app.use(sanitize.middleware);
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
+app.use(sanitize.middleware);
 
 // DB Configuration
 const dbConfig = require('./config/database.config.js');
@@ -48,7 +48,6 @@ app.get('/icons/:icon', (req, res) => {
 });
 
 // Require Routes File
-require('./app/routes/note.routes.js')(app);
 require('./app/routes/session.routes.js')(app);
 require('./app/routes/page.routes.js')(app);
 require('./app/routes/contact.routes.js')(app);

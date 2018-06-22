@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const PageSchema = mongoose.Schema({
     session_id: String,
     host: String,
-    page: String,
+    path: String,
     referrer: String,
     closed: String,
     document: {

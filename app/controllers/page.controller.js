@@ -1,35 +1,51 @@
 const Page = require('../models/page.model.js');
 const Session = require('../models/session.model.js');
+const sanitize = require('sanitize');
+const sanitizer = sanitize();
 
 exports.register = (req, res) => {
-    data = req.body;
+    let session_id = req.paramString("session_id");
+    let host = sanitizer.value(req.body.host, "url");
+    let path = sanitizer.value(req.body.path, "url");
+    let referrer = sanitizer.value(req.body.referrer, "url");
+    let title = sanitizer.value(req.body.document.title, "str");
+    let width = sanitizer.value(req.body.document.width, "int");
+    let height = sanitizer.value(req.body.document.height, "int");
+    let publicIP = sanitizer.value(req.body.network.publicIP, "str");
+    let provider = sanitizer.value(req.body.network.provider, "str");
+    let latitude = sanitizer.value(req.body.location.latitude, "str");
+    let longitude = sanitizer.value(req.body.location.longitude, "str");
+    let country = sanitizer.value(req.body.location.country, "str");
+    let region = sanitizer.value(req.body.location.region, "str");
+    let city = sanitizer.value(req.body.location.city, "str");
+    let postal = sanitizer.value(req.body.location.postal, "str");
 
     const page = new Page({
-        session_id: req.params.session_id || 'Not set',
-        host: data.host || 'Not set',
-        page: data.page || 'Not set',
-        referrer: data.referrer || 'Not set',
+        session_id: session_id || 'Not set',
+        host: host || 'Not set',
+        path: path || 'Not set',
+        referrer: referrer || 'Not set',
         document: {
-            title: data.document.title || 'Not set',
-            width: data.document.width || 'Not set',
-            height: data.document.height || 'Not set',
+            title: title || 'Not set',
+            width: width || 'Not set',
+            height: height || 'Not set',
         },
         network: {
-            publicIP: data.network.publicIP || 'Not set',
-            provider: data.network.provider || 'Not set',
+            publicIP: publicIP || 'Not set',
+            provider: provider || 'Not set',
         },
         location: {
-            latitude: data.location.latitude || 'Not set',
-            longitude: data.location.longitude || 'Not set',
-            country: data.location.country || 'Not set',
-            region: data.location.region || 'Not set',
-            city: data.location.city || 'Not set',
-            postal: data.location.postal || 'Not set'
+            latitude: latitude || 'Not set',
+            longitude: longitude || 'Not set',
+            country: country || 'Not set',
+            region: region || 'Not set',
+            city: city || 'Not set',
+            postal: postal || 'Not set'
         }
     });
 
     Session.update({
-        _id: req.params.session_id
+        _id: session_id
     }, {
         $inc: {
             pages: 1
@@ -54,7 +70,9 @@ exports.register = (req, res) => {
 }
 
 exports.close = (req, res) => {
-    Page.findByIdAndUpdate(req.params.page_id, {
+    let page_id = req.paramString("page_id");
+
+    Page.findByIdAndUpdate(page_id, {
         closed: 'Closed'
     }, {new: false})
         .then(data => {
@@ -62,11 +80,11 @@ exports.close = (req, res) => {
         }).catch(err => {
             if(err.kind === 'ObjectId'){
                 return res.status(404).send({
-                    message: "Page with id " + req.params.page_id + " not found."
+                    message: "Page with id " + page_id + " not found."
                 });
             }
             return res.status(500).send({
-                message: "Error retrieving session with id " + req.params.page_id
+                message: "Error retrieving session with id " + page_id
             });
         });
 }

@@ -1,5 +1,5 @@
 module.exports = (app) => {
-    const notes = require('../controllers/note.controller.js');
+    const notes = require('../controllers/_example.controller.js');
 
     // Create a new notes
     app.post('/notes', notes.create);

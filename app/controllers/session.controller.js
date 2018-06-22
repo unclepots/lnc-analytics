@@ -1,4 +1,6 @@
 const Session = require('../models/session.model.js');
+const sanitize = require('sanitize');
+const sanitizer = sanitize();
 
 exports.open = (req, res) => {
     session = new Session({
@@ -16,7 +18,9 @@ exports.open = (req, res) => {
 }
 
 exports.verify = (req, res) => {
-    Session.findById(req.params.session_id)
+    let session_id = req.paramString("session_id");
+    
+    Session.findById(session_id)
         .then(data => {
             if(!data){
                 res.send("false");
@@ -25,42 +29,52 @@ exports.verify = (req, res) => {
             }
         }).catch(err => {
             res.status(500).send({
-                message: err.message || "Some error occurred while retrieving notes."
+                message: err.message || "Some error occurred while retrieving sesstion."
             });
         });
 }
 
 exports.update = (req, res) => {
-    data = req.body;
-    Session.findByIdAndUpdate(req.params.session_id, {
-        timeZone: data.timeZone || 'Not set',
-        language: data.language || 'Not set',
+    let session_id = req.paramString("session_id");
+    let timeZone = sanitizer.value(req.body.timeZone, "str");
+    let language = sanitizer.value(req.body.language, "str");
+    let os_vendor = sanitizer.value(req.body.software.os.vendor, "str");
+    let browser_vendor = sanitizer.value(req.body.software.browser.vendor, "str");
+    let browser_version = sanitizer.value(req.body.software.browser.version, "str");
+    let display_scale = sanitizer.value(req.body.display.scale, "int");
+    let display_width = sanitizer.value(req.body.display.width, "int");
+    let display_height = sanitizer.value(req.body.display.height, "int");
+    let display_colorDepth = sanitizer.value(req.body.display.colorDepth, "int");
+
+    Session.findByIdAndUpdate(session_id, {
+        timeZone: timeZone || 'Not set',
+        language: language || 'Not set',
         software: {
             os: {
-                vendor: data.software.os.vendor || 'Not Set',
+                vendor: os_vendor || 'Not Set',
             },
             browser: {
-                vendow: data.software.browser.vendor || 'Not Set',
-                version: data.software.browser.version || 'Not Set'
+                vendow: browser_vendor || 'Not Set',
+                version: browser_version || 'Not Set'
             },
         },
         display: {
-            scale: data.display.scale || 'Not Set',
-            width: data.display.width || 'Not Set',
-            height: data.display.height || 'Not Set',
-            colorDepth: data.display.colorDepth || 'Not Set'
+            scale: display_scale || 0,
+            width: display_width || 0,
+            height: display_height || 0,
+            colorDepth: display_colorDepth || 0
         }
     }, {new: false})
-        .then(session => {
+        .then(data => {
             res.send("success");
         }).catch(err => {
             if(err.kind === 'ObjectId'){
                 return res.status(404).send({
-                    message: "Session with id " + req.params.noteId + " not found."
+                    message: "Session with id " + req.params.session_id + " not found."
                 });
             }
             return res.status(500).send({
-                message: "Error retrieving session with id " + req.params.noteId
+                message: err.message || "Error retrieving session with id " + req.params.session_id
             });
         });
 }
