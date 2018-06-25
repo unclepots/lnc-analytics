@@ -250,7 +250,9 @@
                         url:        this.domain + '/page/open/' + this.session_id,
                         success:    function(response){
                             LNCAnalytics.page_id = response;
-                            LNCAnalytics.send_beacon();
+                            setTimeout(function(){
+                                LNCAnalytics.send_beacon();
+                            },5000);
                         }
                     });
                 },
@@ -261,7 +263,7 @@
                             type:       'PUT',
                             url:        LNCAnalytics.domain + '/page/close/' + LNCAnalytics.page_id,
                         });
-                    }, 1000);
+                    }, 2000);
                 },
 
                 send_contact: function (data){
