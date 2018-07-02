@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en-US">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>LNC Analytics</title>
+        <link rel="stylesheet" id="main-css" href="/css/main.css" type="text/css" media="all">
+    </head>
+    <body>
+        <nav id="nav-main">
+            <h1 id="page-title"><a href="/">LNC Analytics</a></h1>
+            <ul id="menu-main">
+                <li><a href="/">Home</a></li>
+                <li><a href="/user/profile/">Profile</a></li>
+                <% if(user.role === 'admin'){ %>
+                <li><a href="/user/users/">Users</a></li>
+                <li><a href="/api/all/">APIs</a></li>
+                <% } %>
+                <li><a href="/auth/logout/">Logout</a></li>
+            </ul>
+        </nav>
+        <header>
+            <h2>Welcome - <%= user.display_name %></h2>
+        </header>
+        <main>
+            <section class="profile-about-section">
+                <h3>Profile info</h3>
+                <img src="<%= user.profile_pic %>" width="250px" height="auto" />
+                <table class="left">
+                    <tr>
+                        <th>First Name:</th>
+                        <td><%= user.first_name %></td>
+                    </tr>
+                    <tr>
+                        <th>Last Name:</th>
+                        <td><%= user.last_name %></td>
+                    </tr>
+                    <tr>
+                        <th>E-mail:</th>
+                        <td><%= user.email %></td>
+                    </tr>
+                    <tr>
+                        <th>Role:</th>
+                        <td><%= user.role %></td>
+                    </tr>
+                </table>
+            </section>
+        </main>
+        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js?ver=3.3.1"></script>
+    </body>
+</html>
