@@ -126,7 +126,7 @@
         
         let LNC = {
 
-            send: (data) => {
+            send: (method, endpoint, data) => {
                 // Create Request
                 var req = new XMLHttpRequest();
 
@@ -141,7 +141,7 @@
                 };
 
                 // Open connection
-                req.open('PUT', '/api/session/', true);
+                req.open(method, endpoint, true);
 
                 // Set headers
                 req.setRequestHeader("Cache-Control", "no-cache");
@@ -166,8 +166,12 @@
                     display_colorDepth: window.screen.colorDepth
                 }
 
-                LNC.send(session_data);
+                LNC.send('PUT', '/api/session/', session_data);
                 
+            },
+
+            send_page_data: (data) => {
+                LNC.send('PUT', '/api/page/', data);
             },
 
             print: (data) => {
@@ -226,16 +230,16 @@
 
             message: function (message){
                 if(message.type === "init"){
-                    this.get_page_info_from_parent(message.data);
+                    this.send_page_data(message.data);
                 }else if(message.type === "contact"){
-                    this.send_contact(message.data);
+                    //this.send_contact(message.data);
                 }
             }
         }
 
         LNC.send_session_data();
 
-        //window.addEventListener('message', function(e){LNC.message(e.data)}, false);
+        window.addEventListener('message', function(e){LNC.message(e.data)}, false);
         
     </script>
 </html>

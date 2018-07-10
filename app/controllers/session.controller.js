@@ -84,8 +84,7 @@ exports.update = (req, res) => {
                 });
             }else{
                 res.send({
-                    message: "Recorded.",
-                    ip: req.headers['x-forwarded-for']
+                    message: "Recorded."
                 });
             }
         })

@@ -10,15 +10,21 @@ exports.open = (req, res) => {
 
     if(sid && sid != 'undefined'){
         
-        Session.update({
+        Session.findOneAndUpdate({
             _id: session_id
         }, {
             $inc: {
                 pages: 1
             }
-        }).then(data => {
-            const page = new Page(tools.page_data(req.body, session_id));
+        }).then(session => {
             
+            //const page = new Page(tools.page_data(req.body, session.id, ip));
+            const page = tools.page_data(req.body, session.id);
+            
+            console.log(page);
+            res.send(page);
+            return;
+
             page.save().then(page => {
                 res.send({pid: tools.encrypt(page.id)});
             }).catch(err => {

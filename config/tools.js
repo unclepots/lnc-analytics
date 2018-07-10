@@ -62,9 +62,14 @@ module.exports = {
             }
         }
     },
-
+    page_geo: (ip, fn) => {
+        where.is(ip, function(err, result){
+            fn(result);
+        });
+    },
     page_data: (body, session_id) => {
         return {
+            geo: body.geo,
             session_id: session_id,
             host: sanitizer.value(body.host, "str") || 'Not set',
             path: sanitizer.value(body.path, "str") || 'Not set',
