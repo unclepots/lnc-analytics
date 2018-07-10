@@ -1,6 +1,17 @@
-module.exports = (app) => {
-    const page = require('../controllers/page.controller.js');
+// Import Packages
+const router = require('express').Router();
+const passport = require('passport');
 
-    app.put('/page/open/:session_id', page.register);
-    app.put('/page/close/:page_id', page.close);
-}
+// Import Controller
+const page = require('../controllers/page.controller.js');
+
+// Routes
+
+// Open Page
+router.put('/', passport.authenticate('bearer', {session: false}), page.open);
+
+// Close Page
+router.delete('/', passport.authenticate('bearer', {session: false}), page.close);
+
+// Export Routes
+module.exports = router;

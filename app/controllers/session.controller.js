@@ -1,141 +1,94 @@
-const Session = require('../models/session.model.js');
-const sanitize = require('sanitize');
-const sanitizer = sanitize();
+// Import Packages
+const tools = require('../../config/tools');
 
-exports.open = (req, res) => {
-    session = new Session({
+// Import Models
+const Session = require('../models/session.model.js');
+const API = require('../models/api.model.js');
+
+// Create Session
+const createSession = (res, token) => {
+    const new_session = new Session({
         pages: 0
     });
 
-    session.save()
-        .then(data => {
-            res.send(data._id);
-        }).catch(err => {
-            res.status(500).send({
-                message: err.message || "Some error occurred while creating the Note."
-            });
+    new_session.save().then(session => {
+        var sid = tools.encrypt(session.id);
+        return_session(sid, res, token);
+    }).catch(err => {
+        res.status(500).send({
+            message: err.message || "Error creating session."
         });
+    });
 }
 
-exports.verify = (req, res) => {
-    let session_id = req.paramString("session_id");
-    
-    Session.findById(session_id)
-        .then(data => {
-            if(!data){
-                res.send("false");
-            }else{
-                res.send("true");
-            }
-        }).catch(err => {
-            res.status(500).send({
-                message: err.message || "Some error occurred while retrieving sesstion."
-            });
+// Verify Session
+const verifySession = (sid, res, token) => {
+    var session_id = tools.decrypt(sid);
+    Session.findById(session_id).then(session => {
+        if(!session){
+            createSession(res, token);
+        }else{
+            return_session(sid, res, token);
+        }
+    }).catch(err => {
+        res.status(500).send({
+            message: err.message || "Error searchingf for session."
         });
+    });
+}
+
+// Return Session info
+const return_session = (sid, res, token) => {
+    res.cookie('lnc-id', sid, { maxAge: 31536000000}).render('session', {token: token});
+}
+
+// Session Init
+exports.get = (req, res) => {
+    const sid = tools.read_cookie(req.headers.cookie, 'lnc-id');
+    
+    const host = req.headers.host;
+    const token = req.params.token
+    API.findOne({
+        api_token: token
+    }).then(api => {
+        if(api.domains.includes(host)){
+            if(!sid || sid === 'undefined'){
+                createSession(res, token);
+            }else{
+                verifySession(sid, res, token);
+            }
+        }else{
+            res.status(401).send({
+                message: "Not Authorized"
+            })
+        }
+        
+    });
+    
 }
 
 exports.update = (req, res) => {
-    let session_id = req.paramString("session_id");
-    let timeZone = sanitizer.value(req.body.timeZone, "str");
-    let language = sanitizer.value(req.body.language, "str");
-    let os_vendor = sanitizer.value(req.body.software.os.vendor, "str");
-    let browser_vendor = sanitizer.value(req.body.software.browser.vendor, "str");
-    let browser_version = sanitizer.value(req.body.software.browser.version, "str");
-    let display_scale = sanitizer.value(req.body.display.scale, "int");
-    let display_width = sanitizer.value(req.body.display.width, "int");
-    let display_height = sanitizer.value(req.body.display.height, "int");
-    let display_colorDepth = sanitizer.value(req.body.display.colorDepth, "int");
+    console.log(req.ip);
+    const sid = tools.read_cookie(req.headers.cookie, 'lnc-id');
 
-    Session.findByIdAndUpdate(session_id, {
-        timeZone: timeZone || 'Not set',
-        language: language || 'Not set',
-        software: {
-            os: {
-                vendor: os_vendor || 'Not Set',
-            },
-            browser: {
-                vendow: browser_vendor || 'Not Set',
-                version: browser_version || 'Not Set'
-            },
-        },
-        display: {
-            scale: display_scale || 0,
-            width: display_width || 0,
-            height: display_height || 0,
-            colorDepth: display_colorDepth || 0
-        }
-    }, {new: false})
-        .then(data => {
-            res.send("success");
-        }).catch(err => {
-            if(err.kind === 'ObjectId'){
-                return res.status(404).send({
-                    message: "Session with id " + req.params.session_id + " not found."
-                });
-            }
-            return res.status(500).send({
-                message: err.message || "Error retrieving session with id " + req.params.session_id
-            });
-        });
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-exports.all = (req, res) => {
-    Session.find()
-        .then(sessions => {
-            res.send(sessions);
-        }).catch(err => {
-            res.status(500).send({
-                message: err.message || "Some error occurred while retrieving notes."
-            });
-        });
-};
-
-exports.delete = (req, res) => {
-    Session.findByIdAndRemove(req.params.session_id)
-        .then(session => {
+    if(sid && sid != 'undefined'){
+        
+        Session.findByIdAndUpdate(tools.decrypt(sid), tools.session_data(req.body), {new: true}).then(session => {
             if(!session){
-                return res.status(404).send({
-                    message: "Session with id " + req.params.noteId + " not found."
+                res.status(404).send({
+                    message: "Session ID not found.",
+                    ip: req.ip
+                });
+            }else{
+                res.send({
+                    message: "Recorded."
                 });
             }
-            res.send({
-                message: "Session has been deleted"
-            });
-        }).catch(err => {
-            if(err.kind === 'ObjectId' || err.name === 'NotFound') {
-                return res.status(404).send({
-                    message: "Session with id " + req.params.noteId + " not found."
-                });
-            }
-            return res.status(500).send({
-                message: "Error retrieving Session with id " + req.params.noteId
-            });
+        })
+
+    }else{
+        res.status(404).send({
+            message: "Session ID not set."
         });
-};
+    }
+}

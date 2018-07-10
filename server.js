@@ -38,6 +38,7 @@ mongoose.connect(keys.database.url).then(() => {
 
 // Enable Cookies
 app.use(cookieSession({
+    name: 'lnc-session',
     maxAge: 30*24*60*60*1000,
     keys: [keys.session.cookieKey]
 }));
@@ -53,10 +54,16 @@ app.use(express.static(path.join(__dirname, 'public')));
 const authRoutes = require('./app/routes/auth.routes');
 const userRoutes = require('./app/routes/user.routes');
 const apiRoutes = require('./app/routes/api.routes');
+const sessionRoutes = require('./app/routes/session.routes');
+const pageRoutes = require('./app/routes/page.routes');
 
 // Set Routes
 app.get('/', (req, res) => {
     res.render('home', {user: req.user});
+});
+
+app.get('/sample/', (req, res) => {
+    res.render('sample');
 });
 
 // Authentification Routes
@@ -67,6 +74,10 @@ app.use('/user/', userRoutes);
 
 // API Routes
 app.use('/api/', apiRoutes);
+
+// Session Routes
+app.use('/api/session/', sessionRoutes);
+app.use('/api/page/', pageRoutes);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

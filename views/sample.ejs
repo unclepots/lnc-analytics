@@ -2,21 +2,15 @@
 <html lang="en-US">
     <head>
         <title>Sample Tracking</title>
-        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js?ver=3.3.1"></script>
+        <meta id="token" data-token="44a7c3d5d9697529a42c81a067e98952ca9360f52ea2c93811bac3029294e84f"/>
     </head>
     <body>
         <h1>Testing Server</h1>
     </body>
     <script>
-        jQuery(document).ready(function($){
-            "use strict";
-        });
-        $(window).on('load', function(){
-            "use strict";
-            add_tracking();
-        });
         function add_tracking(){
             var domain = (document.location.href.indexOf("localhost") > -1) ? "http://localhost:5000" : "https://lnc-analytics.herokuapp.com";
+            var token = document.getElementById("token").dataset.token;
             var iframe = document.createElement('iframe');
             iframe.style.display = "none";
             iframe.id = 'lnc-analytics';
@@ -34,8 +28,9 @@
                 };
                 this.contentWindow.postMessage(arr, domain);
             };
-            iframe.src = domain + '/session/';
+            iframe.src = domain + '/api/session/' + token;
             document.body.appendChild(iframe);
         }
+        add_tracking();
     </script>
 </html>

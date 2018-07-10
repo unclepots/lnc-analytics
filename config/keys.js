@@ -8,7 +8,9 @@ module.exports = {
         client_secret: process.env.GOOGLE_SECRET,
     },
     session: {
-        cookieKey: process.env.COOKIE_KEY
+        cookieKey: process.env.COOKIE_KEY,
+        secret: process.env.COOKIE_SECRET,
+        iv: process.env.COOKIE_IV
     },
     database:{
         url: 'mongodb+srv://' + process.env.DB_USER + ':' +  process.env.DB_PASSWORD + '@' + process.env.DB_HOST + '/' + db_name + '?retryWrites=true'

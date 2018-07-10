@@ -1,14 +1,17 @@
-const path = require('path');
+// Import Packages
+const router = require('express').Router();
+const passport = require('passport');
 
-module.exports = (app) => {
-    const session = require('../controllers/session.controller.js');
+// Import Controller
+const session = require('../controllers/session.controller.js');
 
-    app.get('/session', (req, res) => {
-        res.sendFile(path.join(__dirname + '../../../html/session.html'));
-    });
+// Routes
 
-    app.get('/session/open', session.open);
-    app.get('/session/verify/:session_id', session.verify);
+// Open Session
+router.get('/:token', session.get);
 
-    app.put('/session/update/:session_id', session.update);
-}
+// Add Session Data
+router.put('/', passport.authenticate('bearer', {session: false}), session.update);
+
+// Export Routes
+module.exports = router;

@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en-US">
+    <script>
+
+        let BrowserDetect = {
+            init: function () {
+                this.browser = this.searchString(this.dataBrowser) || "An unknown browser";
+                this.version = this.searchVersion(navigator.userAgent)
+                    || this.searchVersion(navigator.appVersion)
+                    || "an unknown version";
+                this.OS = this.searchString(this.dataOS) || "an unknown OS";
+            },
+            searchString: function (data) {
+                for (var i=0;i<data.length;i++)	{
+                    var dataString = data[i].string;
+                    var dataProp = data[i].prop;
+                    this.versionSearchString = data[i].versionSearch || data[i].identity;
+                    if (dataString) {
+                        if (dataString.indexOf(data[i].subString) != -1)
+                            return data[i].identity;
+                    }
+                    else if (dataProp)
+                        return data[i].identity;
+                }
+            },
+            searchVersion: function (dataString) {
+                var index = dataString.indexOf(this.versionSearchString);
+                if (index == -1) return;
+                return parseFloat(dataString.substring(index+this.versionSearchString.length+1));
+            },
+            dataBrowser: [
+                {
+                    string: navigator.userAgent,
+                    subString: "Chrome",
+                    identity: "Chrome"
+                },
+                { 	string: navigator.userAgent,
+                    subString: "OmniWeb",
+                    versionSearch: "OmniWeb/",
+                    identity: "OmniWeb"
+                },
+                {
+                    string: navigator.vendor,
+                    subString: "Apple",
+                    identity: "Safari",
+                    versionSearch: "Version"
+                },
+                {
+                    prop: window.opera,
+                    identity: "Opera"
+                },
+                {
+                    string: navigator.vendor,
+                    subString: "iCab",
+                    identity: "iCab"
+                },
+                {
+                    string: navigator.vendor,
+                    subString: "KDE",
+                    identity: "Konqueror"
+                },
+                {
+                    string: navigator.userAgent,
+                    subString: "Firefox",
+                    identity: "Firefox"
+                },
+                {
+                    string: navigator.vendor,
+                    subString: "Camino",
+                    identity: "Camino"
+                },
+                {		// for newer Netscapes (6+)
+                    string: navigator.userAgent,
+                    subString: "Netscape",
+                    identity: "Netscape"
+                },
+                {
+                    string: navigator.userAgent,
+                    subString: "MSIE",
+                    identity: "Explorer",
+                    versionSearch: "MSIE"
+                },
+                {
+                    string: navigator.userAgent,
+                    subString: "Gecko",
+                    identity: "Mozilla",
+                    versionSearch: "rv"
+                },
+                { 		// for older Netscapes (4-)
+                    string: navigator.userAgent,
+                    subString: "Mozilla",
+                    identity: "Netscape",
+                    versionSearch: "Mozilla"
+                }
+            ],
+            dataOS : [
+                {
+                    string: navigator.platform,
+                    subString: "Win",
+                    identity: "Windows"
+                },
+                {
+                    string: navigator.platform,
+                    subString: "Mac",
+                    identity: "Mac"
+                },
+                {
+                    string: navigator.userAgent,
+                    subString: "iPhone",
+                    identity: "iPhone/iPod"
+                },
+                {
+                    string: navigator.userAgent,
+                    subString: "iPad",
+                    identity: "iPad"
+                },
+                {
+                    string: navigator.platform,
+                    subString: "Linux",
+                    identity: "Linux"
+                }
+            ]
+
+        };
+        BrowserDetect.init();
+        
+        let LNC = {
+
+            send: (data) => {
+                // Create Request
+                var req = new XMLHttpRequest();
+
+                // Set Credentials
+                req.withCredentials = true;
+
+                // Onload function
+                req.onload = () => {
+                    if(req.readyState === 4){
+                        LNC.print(req.responseText);
+                    }
+                };
+
+                // Open connection
+                req.open('PUT', '/api/session/', true);
+
+                // Set headers
+                req.setRequestHeader("Cache-Control", "no-cache");
+                req.setRequestHeader('Content-Type', 'application/json');
+                req.setRequestHeader("Authorization", "Bearer " + "<%=token%>");
+                
+                // Send Request
+                req.send(JSON.stringify(data));
+            },
+
+            send_session_data: () => {
+                
+                const session_data = {
+                    timezone: new Date().getTimezoneOffset(),
+                    language: navigator.language || navigator.userLanguage,
+                    os_vendor: BrowserDetect.OS,
+                    browser_vendor: BrowserDetect.browser,
+                    browser_version: BrowserDetect.version,
+                    display_scale: window.devicePixelRatio,
+                    display_width: window.screen.width,
+                    display_height: window.screen.height,
+                    display_colorDepth: window.screen.colorDepth
+                }
+
+                LNC.send(session_data);
+                
+            },
+
+            print: (data) => {
+                console.log(data);
+            },
+            
+            /*
+            get_page_info_from_ip: function () {
+                $.get("https://ipinfo.io", function(response) {
+                    
+                    const loc = response.loc.split(',');
+
+                    LNCAnalytics.page_data["network"] = {};
+                    LNCAnalytics.page_data["network"]["publicIP"] = response.ip;
+                    LNCAnalytics.page_data["network"]["provider"] = response.org;
+
+                    LNCAnalytics.page_data["location"] = {};
+                    LNCAnalytics.page_data["location"]["latitude"] = loc[0];
+                    LNCAnalytics.page_data["location"]["longitude"] = loc[1];
+                    LNCAnalytics.page_data["location"]["country"] = response.country;
+                    LNCAnalytics.page_data["location"]["region"] = response.region;
+                    LNCAnalytics.page_data["location"]["postal"] = response.postal;
+                    LNCAnalytics.page_data["location"]["city"] = response.city;
+                    
+                    LNCAnalytics.send_page_data(this.page_data);
+
+                }, "jsonp");
+            },
+            
+            get_page_info_from_parent: function (data) {
+            
+                this.page_data['referrer'] = data.referrer;
+                this.page_data['host'] = data.host;
+                this.page_data['path'] = data.path;
+
+                this.page_data['document'] = {};
+                this.page_data['document']['title'] = data.title;
+                this.page_data['document']['width'] = data.width;
+                this.page_data['document']['height'] = data.height;
+
+                this.send_page_data(this.page_data);
+            },
+
+            send_contact: function (data){
+                let contact_data = {}
+
+                contact_data["origin"] = data.origin;
+                contact_data["firstname"] = data.firstname;
+                contact_data["lastname"] = data.lastname;
+                contact_data["email"] = data.email;
+                contact_data["phone"] = data.phone;
+                contact_data["message"] = data.message;
+            },
+
+            */
+
+            message: function (message){
+                if(message.type === "init"){
+                    this.get_page_info_from_parent(message.data);
+                }else if(message.type === "contact"){
+                    this.send_contact(message.data);
+                }
+            }
+        }
+
+        LNC.send_session_data();
+
+        //window.addEventListener('message', function(e){LNC.message(e.data)}, false);
+        
+    </script>
+</html>
