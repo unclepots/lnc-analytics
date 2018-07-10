@@ -80,12 +80,12 @@ exports.update = (req, res) => {
         Session.findByIdAndUpdate(tools.decrypt(sid), tools.session_data(req.body), {new: true}).then(session => {
             if(!session){
                 res.status(404).send({
-                    message: "Session ID not found.",
-                    ip: req.ip
+                    message: "Session ID not found."
                 });
             }else{
                 res.send({
-                    message: "Recorded."
+                    message: "Recorded.",
+                    ip: req.ip
                 });
             }
         })
