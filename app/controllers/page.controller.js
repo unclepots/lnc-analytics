@@ -19,7 +19,7 @@ exports.open = (req, res) => {
         }).then(session => {
             
             //const page = new Page(tools.page_data(req.body, session.id, ip));
-            const page = tools.page_data(req.body, session.id);
+            const page = tools.page_data(req.body, session.id, req.geo);
             
             console.log(page);
             res.send(page);

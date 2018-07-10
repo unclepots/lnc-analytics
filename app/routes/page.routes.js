@@ -12,7 +12,7 @@ const page = require('../controllers/page.controller.js');
 router.put('/', passport.authenticate('bearer', {session: false}), function(req,res,next){
     const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
     where.is(req.ip, function(err, result) {
-        req.body.geo = result;
+        req.geo = result;
         next();
     });
 }, page.open);

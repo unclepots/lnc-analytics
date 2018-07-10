@@ -67,9 +67,9 @@ module.exports = {
             fn(result);
         });
     },
-    page_data: (body, session_id) => {
+    page_data: (body, session_id, page_geo) => {
         return {
-            geo: body.geo,
+            geo: page_geo,
             session_id: session_id,
             host: sanitizer.value(body.host, "str") || 'Not set',
             path: sanitizer.value(body.path, "str") || 'Not set',
