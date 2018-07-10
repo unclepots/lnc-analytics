@@ -72,7 +72,7 @@ exports.get = (req, res) => {
 }
 
 exports.update = (req, res) => {
-    console.log(req.ip);
+    
     const sid = tools.read_cookie(req.headers.cookie, 'lnc-id');
 
     if(sid && sid != 'undefined'){
@@ -85,7 +85,7 @@ exports.update = (req, res) => {
             }else{
                 res.send({
                     message: "Recorded.",
-                    ip: req.ip
+                    ip: req.connection.remoteAddress
                 });
             }
         })
