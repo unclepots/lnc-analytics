@@ -20,7 +20,7 @@ exports.open = (req, res) => {
             
             //const page = new Page(tools.page_data(req.body, session.id, ip));
             const page = tools.page_data(req.body, session.id, req.geo);
-            
+            console.log("============ PAGE =============")
             console.log(page);
             res.send(page);
             return;

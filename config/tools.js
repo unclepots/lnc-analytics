@@ -62,11 +62,8 @@ module.exports = {
             }
         }
     },
-    page_geo: (ip, fn) => {
-        where.is(ip, function(err, result){
-            fn(result);
-        });
-    },
+
+    // Get Page Data
     page_data: (body, session_id, page_geo) => {
         return {
             geo: page_geo,

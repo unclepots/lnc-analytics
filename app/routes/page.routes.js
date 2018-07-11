@@ -11,7 +11,15 @@ const page = require('../controllers/page.controller.js');
 // Open Page
 router.put('/', passport.authenticate('bearer', {session: false}), function(req,res,next){
     const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+    console.log("========== HEADER ==========");
+    console.log(req.headers['x-forwarded-for']);
+    console.log("========== REMOTE ==========");
+    console.log(req.connection.remoteAddress);
+    console.log("========== END ==========");
+    console.log(ip);
     where.is(ip, function(err, result) {
+        console.log("========== RESULT ==========");
+        console.log(result);
         req.geo = result;
         next();
     });
