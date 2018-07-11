@@ -18,6 +18,8 @@ router.put('/', passport.authenticate('bearer', {session: false}), function(req,
     console.log("========== END ==========");
     console.log(ip);
     where.is(ip, function(err, result) {
+        console.log("========== ERROR ==========");
+        console.log(err);
         console.log("========== RESULT ==========");
         console.log(result);
         req.geo = result;
