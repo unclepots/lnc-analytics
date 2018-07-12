@@ -63,7 +63,7 @@ module.exports = {
         }
     },
 
-    // Get Page Data
+    // Get Page Data7
     page_data: (body, session_id, page_geo) => {
         return {
             geo: page_geo,

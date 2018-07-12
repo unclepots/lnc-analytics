@@ -1,7 +1,7 @@
 // Import Packages
 const router = require('express').Router();
 const passport = require('passport');
-const where = require('node-where');
+const geoip = require('geoip-lite');
 
 // Import Controller
 const page = require('../controllers/page.controller.js');
@@ -17,14 +17,11 @@ router.put('/', passport.authenticate('bearer', {session: false}), function(req,
     console.log(req.connection.remoteAddress);
     console.log("========== END ==========");
     console.log(ip);
-    where.is(ip, function(err, result) {
-        console.log("========== ERROR ==========");
-        console.log(err);
-        console.log("========== RESULT ==========");
-        console.log(result);
-        req.geo = result;
-        next();
-    });
+    const geo = geoip.lookup(ip);
+    console.log("========== GEO ==========");
+    console.log(geo);
+
+    next();
 }, page.open);
 
 // Close Page
